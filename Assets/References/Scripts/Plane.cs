@@ -7,7 +7,7 @@ namespace ProceduralModeling_AI
 {
     public class Plane : MonoBehaviour
     {
-        [SerializeField, Range(2, 30)]
+        [SerializeField, Range(1, 30)]
         protected int widthSegments = 8, heightSegments = 8;
         [SerializeField, Range(0.1f, 10f)]
         protected float width = 1f, height = 1f;
@@ -48,45 +48,43 @@ namespace ProceduralModeling_AI
             var uv = new List<Vector2>();
             var normals = new List<Vector3>();
             var triangles = new List<int>();
-            var winv = 1f / (widthSegments - 1);
-            var hinv = 1f / (heightSegments - 1);
-
-            for (int z = 0; z < heightSegments; z++)
+            
+            for (int z = 0; z < heightSegments + 1; z++)
             {
                 // s‚ÌˆÊ’u‚ÌŠ„‡(0.0 ~ 1.0)
-                var rz = z * hinv;
-                for (int x = 0; x < widthSegments; x++)
+                var rz = (float)z / heightSegments;
+                for (int x = 0; x < widthSegments + 1; x++)
                 {
                     // —ñ‚ÌˆÊ’u‚ÌŠ„‡(0.0 ~ 1.0)
-                    var rx = x * winv;
+                    var rx = (float)x / widthSegments;
 
                     vertices.Add(new Vector3(
                         (rx - 0.5f) * width,
                         Mathf.PerlinNoise(rx * frequency, rz * frequency) * depth,
-                        (0.5f - rz) * height
+                        (rz - 0.5f) * height
                     ));
-                    uv.Add(new Vector2(rx, 1.0f - rz));
+                    uv.Add(new Vector2(rx, rz));
                     normals.Add(new Vector3(0f, 1f, 0f));
                 }
             }
 
-            for (int z = 0; z < heightSegments - 1; z++)
+            for (int z = 0; z < heightSegments; z++)
             {
-                for (int x = 0; x < widthSegments - 1; x++)
+                for (int x = 0; x < widthSegments; x++)
                 {
-                    int index = z * widthSegments + x;
+                    int index = z * (widthSegments + 1) + x;
                     var a = index;
-                    var b = index + 1;
-                    var c = index + 1 + widthSegments;
-                    var d = index + widthSegments;
+                    var b = index + (widthSegments + 1);
+                    var c = index + 1;
+                    var d = index + (widthSegments + 1) + 1;
 
                     triangles.Add(a);
                     triangles.Add(b);
                     triangles.Add(c);
 
-                    triangles.Add(c);
+                    triangles.Add(b);
                     triangles.Add(d);
-                    triangles.Add(a);
+                    triangles.Add(c);
                 }
             }
             mesh.vertices = vertices.ToArray();
